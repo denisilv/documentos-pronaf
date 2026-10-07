@@ -479,7 +479,13 @@
 
         function atualizarConjuge() {
             const val = estadoCivil.value;
-            const precisaConjuge = (val === 'CASADA' || val === 'UNIÃO ESTÁVEL');
+            const precisaConjuge = (
+            val === 'CASADO(A)' ||
+            val === 'CASADA' ||
+            val === 'CASADO' ||
+            val === 'UNIÃO ESTÁVEL' ||
+            val === 'UNIAO ESTAVEL'
+            );
             campoConjuge.classList.toggle('ativo', precisaConjuge);
             regimeBox.style.display = precisaConjuge ? 'block' : 'none';
         }

@@ -83,6 +83,86 @@ CINZA = HexColor("#333333")
 CINZA_CLARO = HexColor("#666666")
 AZUL_BANCO = HexColor("#003366")
 
+DADOS_EXEMPLO = {
+    "nome": "JOÃO DA SILVA",
+    "cpf": "12345678909",
+    "rg": "1234567",
+    "orgao_rg": "SSP",
+    "uf_rg": "MA",
+    "data_expedicao_rg": "15/06/2015",
+    "data_nascimento": "12/03/1988",
+    "local_nascimento": "BOM JARDIM",
+    "uf_nascimento": "MA",
+    "estado_civil": "SOLTEIRO(A)",
+    "regime_casamento": "",
+    "genero": "Masculino",
+    "nome_mae": "MARIA DA SILVA",
+    "nacionalidade": "Brasileira",
+    "endereco": "SÍTIO SÃO BENEDITO",
+    "bairro": "ZONA RURAL",
+    "cidade": "BOM JARDIM",
+    "uf": "MA",
+    "cep": "65450-000",
+    "complemento": "",
+    "conjuge_nome": "",
+    "conjuge_cpf": "",
+    "nome_propriedade": "FAZENDA SÃO JOÃO",
+    "area_ha": "15",
+    "numero_caf": "1234567890",
+    "atividade": "agricultora",
+    "tipo_atividade": "pecuária",
+    "tempo_atividade": "05 (cinco)",
+    "tempo_posse": "2 (dois)",
+    "qualificacao": "Pecuarista",
+    "latitude": "05° 15' 20\"S",
+    "longitude": "45° 40' 10\"O",
+    "ano_inicio_posse": "2018",
+    "comprovante_energia": "SIM",
+    "croqui": "SIM",
+    "nome_tecnica": "AMANDA APARECIDA MILEN LIRA",
+    "cfta": "07752713309",
+    "empresa": "F E A DA SILVA JUNIOR LTDA",
+    "empresa_cnpj": "51.786.165/0001-71",
+    "cidade_agencia": "SANTA INÊS",
+    "cidade_agencia_outra": "",
+    "data_declaracao": "06/10/2026",
+    "pep": "Não",
+    "proposito": "Realizar empréstimos ou financiamentos.",
+    "coordenadas": "Lat: 05° 15' 20\"S Lon: 45° 40' 10\"O",
+}
+
+
+def gerar_todos(dados: dict = None, output_dir: str = None):
+    """Gera os quatro documentos usando um único dicionário de dados."""
+    if dados is None:
+        dados = DADOS_EXEMPLO
+    if output_dir is None:
+        output_dir = OUTPUT_DIR
+    os.makedirs(output_dir, exist_ok=True)
+
+    nome_safe = str(dados.get("nome", "CLIENTE")).replace(" ", "_")[:30] or "CLIENTE"
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    arquivos = {}
+
+    atividade_path = os.path.join(output_dir, f"DECLARACAO_ATIVIDADE_{nome_safe}_{ts}.pdf")
+    gerar_declaracao_atividade(dados, atividade_path)
+    arquivos["atividade"] = os.path.basename(atividade_path)
+
+    posse_path = os.path.join(output_dir, f"DECLARACAO_POSSE_MANSA_{nome_safe}_{ts}.pdf")
+    gerar_declaracao_posse_mansa(dados, posse_path)
+    arquivos["posse"] = os.path.basename(posse_path)
+
+    vizinhanca_path = os.path.join(output_dir, f"DECLARACAO_VIZINHANCA_{nome_safe}_{ts}.pdf")
+    gerar_declaracao_vizinhanca(dados, vizinhanca_path)
+    arquivos["vizinhanca"] = os.path.basename(vizinhanca_path)
+
+    ficha_path = os.path.join(output_dir, f"FICHA_CADASTRAL_{nome_safe}_{ts}.pdf")
+    gerar_ficha_cadastral(dados, ficha_path)
+    arquivos["ficha"] = os.path.basename(ficha_path)
+
+    return arquivos
+
 
 def format_cpf(cpf: str) -> str:
     cpf = "".join(filter(str.isdigit, str(cpf)))
@@ -619,17 +699,25 @@ def gerar_declaracao_vizinhanca(dados: dict, output_path: str = None):
     c.drawString(19*mm, y + 3.8*mm, "Informações sobre litigio ou não da área:")
 
     # Declaração final
-    y = y - 5*mm
+    y = y - 2*mm
     texto_final = (
         "Declaro sob as penas da lei que as informações por mim prestadas acima expressam a verdade e que detenho de fato o "
         "direito de uso, na condição de posseiro do imóvel rural acima descrito. Declaro ainda que este documento não tem "
         "validade para efeito de regularização fundiária, somente para comprovação da posse do imóvel junto ao Banco da "
         "Amazônia S.A."
     )
-    style = ParagraphStyle("final", fontName="Liberation", fontSize=10, leading=9, alignment=TA_JUSTIFY)
+    style = ParagraphStyle("final", fontName="Liberation", fontSize=9.5, leading=9, alignment=TA_JUSTIFY)
     p = Paragraph(texto_final, style)
-    w, h = p.wrap(width - 40*mm, 30*mm)
-    p.drawOn(c, 20*mm, y - h)
+    w, h = p.wrap(width - 44*mm, 40*mm)
+
+    # Caixa ao redor do texto
+    padding = 2*mm
+    c.setStrokeColor(black)
+    c.setLineWidth(0.6)
+    c.rect(18*mm, y - h - padding, width - 36*mm, h + 1.5*padding)
+
+    # Texto dentro da caixa
+    p.drawOn(c, 22*mm, y - h)
 
     y = y - 25*mm
     c.setFont("Liberation-Bold", 10)

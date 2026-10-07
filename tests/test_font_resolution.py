@@ -30,6 +30,11 @@ class FontResolutionTest(unittest.TestCase):
         from pathlib import Path
         self.assertTrue(Path("gerar_documentos.py").exists())
 
+    def test_example_generation_api_exists(self):
+        import geradores
+        self.assertTrue(hasattr(geradores, "DADOS_EXEMPLO"))
+        self.assertTrue(callable(getattr(geradores, "gerar_todos", None)))
+
 
 if __name__ == "__main__":
     unittest.main()
